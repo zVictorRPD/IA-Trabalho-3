@@ -1,0 +1,17 @@
+Version Description
+
+12/19/2003
+0.2  Modifications for performance and future extensibility include:
+     Build ant script
+     Change all java.util.Vector to java.util.ArrayList
+     Change all java.util.HashTable to java.util.HashMap
+     Refactor/consolidate parsing code into new class, RuleParser
+     Change parser to operate on java.io.Reader
+     Break out StackElement into its own file.
+     Added Factory to facilitate subclassing and experimentation.
+     Recover lost source code to the crane applet example.
+     Move code to package org.sazonov.fuzzy 
+     
+
+0.1  Edward Sazonov's original code at
+     http://www.clarkson.edu/~esazonov/FuzzyEngine.htm

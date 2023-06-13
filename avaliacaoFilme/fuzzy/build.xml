@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="fuzzy">
+
+
+<!-- 
+  *********
+   init
+  ********* 
+-->
+    <target name="init">
+        <property name="BUILD_DIR" value="build"/>
+        <property name="SRC_DIR" value="src"/>
+        <property name="EXAMPLE_JAR_FILE" value="${BUILD_DIR}/export.jar"/>
+        <property name="ENGINE_JAR_FILE" value="${BUILD_DIR}/fuzzyEngine.jar"/>
+        <property name="EXAMPLE_BKGND" value="org/sazonov/fuzzy/craneExample/dock.gif"/>
+        <property name="APPLET_EXAMPLE_DIR" value="doc/appletExample"/>
+        <property name="DOC_DIR" value="doc"/>
+        <property name="JAVADOC_DIR" value="${DOC_DIR}/javaDoc"/>
+        <property name="SRC_PREFIX" value="fuzzy"/>
+        <property name="SRC_JAR" value="${DOC_DIR}/fuzzySrc.zip"/>
+        
+    </target>
+
+<!-- 
+  *********
+   Compile - compile sources
+  ********* 
+-->
+    <target depends="init" name="compile">
+        <mkdir dir="${BUILD_DIR}"/>    
+        <javac debug="true" deprecation="true" destdir="${BUILD_DIR}" srcdir="${SRC_DIR}">
+            <!-- To add something to the classpath: -->
+            <!-- <classpath><pathelement location="${mylib}"/></classpath> -->
+            <!-- To exclude some files: -->
+            <!-- <exclude name="com/foo/SomeFile.java"/><exclude name="com/foo/somepackage/"/> -->
+        </javac>
+        
+        <copy file="${SRC_DIR}/${EXAMPLE_BKGND}" tofile="${BUILD_DIR}/${EXAMPLE_BKGND}"/>
+
+    </target>
+
+<!-- 
+  *********
+   example - build the example applet and the jar it depends on
+  ********* 
+-->
+    <target depends="init,compile" name="example">
+        <jar basedir="${BUILD_DIR}" compress="true" jarfile="${EXAMPLE_JAR_FILE}" manifest="${SRC_DIR}/META-INF/MANIFEST.MF">
+            <exclude name="export.jar"/>
+            <exclude name="fuzzyEngine.jar"/>
+        </jar>
+        <copy file="${EXAMPLE_JAR_FILE}" toDir="${APPLET_EXAMPLE_DIR}"/>
+    </target>
+
+<!-- 
+  *********
+   engine - build the engine jar file
+  ********* 
+-->
+    <target depends="init,compile" name="engine">
+        <jar basedir="${BUILD_DIR}" compress="true" jarfile="${ENGINE_JAR_FILE}">
+            <include name="org/sazonov/fuzzy/engine/*.class"/>
+        </jar>
+    </target>
+
+<!-- 
+  *********
+   all - compile all the executables
+  ********* 
+-->
+    <target depends="init,example,engine" description="Build everything." name="all">
+        <echo message="Everything built. "/>
+    </target>
+
+<!-- 
+  *********
+   test - test the example
+  ********* 
+-->
+    <target depends="init,example,engine" description="Try running it." name="test">
+        <java classname="org.sazonov.fuzzy.craneExample.LoadSway" failonerror="true" fork="true">
+            <classpath>
+                <pathelement location="${EXAMPLE_JAR_FILE}"/>
+            </classpath>
+        </java>
+    </target>
+
+<!-- 
+  *********
+   javadoc - build javadoc
+  ********* 
+-->
+    <target depends="init" description="Javadoc for my API." name="javadoc">
+        <delete dir="${JAVADOC_DIR}"/>
+        <mkdir dir="${JAVADOC_DIR}"/>
+        <javadoc destdir="${JAVADOC_DIR}" packagenames="org.sazonov.fuzzy.engine" public="true">
+            <sourcepath>
+                <pathelement location="${SRC_DIR}"/>
+                <pathelement location="${BUILD_DIR}"/>
+            </sourcepath>
+        </javadoc>
+    </target>
+
+<!-- 
+  *********
+   clean - delete the build files 
+  ********* 
+-->
+    <target depends="init" description="Clean all build products." name="clean">
+	<delete dir="${BUILD_DIR}" />
+	<delete file="${SRC_JAR}"/>
+    </target>
+
+<!-- 
+  *********
+   source - build source zip file
+  ********* 
+-->
+    <target depends="init" description="Make a .zip of the sources for distribution" name="source">
+        <zip compress="true" zipfile="${SRC_JAR}">
+            <zipfileset dir="${SRC_DIR}" prefix="${SRC_PREFIX}/${SRC_DIR}">
+                <include name="META-INF/**/*.*"/>
+                <exclude name="**/.nbattrs"/>
+            </zipfileset>
+            <zipfileset dir="${SRC_DIR}" prefix="${SRC_PREFIX}/${SRC_DIR}">
+                <include name="org/sazonov/**/*.*"/>
+                <exclude name="**/.nbattrs"/>
+            </zipfileset>
+            <zipfileset dir="${DOC_DIR}" prefix="${SRC_PREFIX}/${DOC_DIR}">
+                <include name="**/*.*"/>
+		<exclude name="fuzzySrc.zip"/>
+            </zipfileset>
+            <zipfileset dir="${APPLET_EXAMPLE_DIR}" prefix="${SRC_PREFIX}/${APPLET_EXAMPLE_DIR}">
+                <include name="**/*.*"/>
+            </zipfileset>            
+            <zipfileset dir="." prefix="${SRC_PREFIX}">
+                <include name="build.xml"/>
+                <include name="COPYING"/>
+            </zipfileset>            
+        </zip>
+    </target>
+
+
+</project>

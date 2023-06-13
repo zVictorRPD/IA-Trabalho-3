@@ -1,0 +1,80 @@
+/*
+
+EXEMPLO: Cálcula a nota de um filme/série
+
+*/
+
+FUNCTION_BLOCK function_rating	            // Block definition (there may be more than one block per file)
+
+    VAR_INPUT				                // Define as variáveis de entrada
+        script : REAL;
+        acting : REAL;
+        direction : REAL;
+    END_VAR
+
+    VAR_OUTPUT				                // Define as variáveis de saída
+        rating : REAL;
+    END_VAR
+
+    FUZZIFY script			                // Fuzzifica a variável de entrada 'script (Roteiro)': {'ruim', 'bom' , 'otimo'}
+        TERM ruim := (0, 1) (5, 0) ; 
+        TERM bom := (3, 0) (4,1) (6,1) (7,0);
+        TERM otimo := (5, 0) (9, 1) (10, 1);
+    END_FUZZIFY
+
+    FUZZIFY acting			                // Fuzzifica a variável de entrada 'acting (Atuação)': { 'pessima', 'normal', 'majestosa' }
+        TERM pessima := (0, 1) (2.5, 1) (5,0) ;
+        TERM normal := (2,0) (4,1) (5,1) (8,0);
+        TERM majestosa := (6,0) (9.5,1) (10,1);
+    END_FUZZIFY
+
+    FUZZIFY direction			            // Fuzzifica a variável de entrada 'direction (direção)': { 'pessima', normal, 'otima' }
+        TERM pessima := (0, 1) (2.5, 1) (3,0) ;
+        TERM normal := (1.5,0) (4,1) (6,1) (8.5,0);
+        TERM otima := (7,0) (9.5,1) (10, 1);
+    END_FUZZIFY
+
+    DEFUZZIFY rating			            // Defuzzifica a variável de saída 'gorgeta' : {'pequena', 'media', 'generosa' }
+        TERM ruim := (0,1) (3,1) (5,0);
+        TERM mediocre := (4,0) (4.5,1) (5.5, 1) (6.5,0);
+        TERM bom := (6,0) (7.5,1) (9,0);
+        TERM obra_prima := (8,0) (9.5,1) (10,1);
+        METHOD : COG;		                // Uso o Centro de Gravidade como método de defuzzificacao
+        DEFAULT := 0;		                // Valor default é 0 (se nenhuma regra ativar o defuzzificador)
+    END_DEFUZZIFY
+
+    RULEBLOCK No1
+        AND : MIN;			                // Usa 'min' para o 'and' 
+        ACT : MIN;			                // Usa 'min' como método de ativação
+        ACCU : MAX;			                // Usa 'max' como método de acumulação
+
+        RULE  1 : IF script IS ruim  AND acting IS pessima   AND direction IS pessima THEN rating IS ruim;
+        RULE  2 : IF script IS ruim  AND acting IS pessima   AND direction IS normal  THEN rating IS ruim;
+        RULE  3 : IF script IS ruim  AND acting IS pessima   AND direction IS otima   THEN rating IS ruim;
+        RULE  4 : IF script IS ruim  AND acting IS normal    AND direction IS pessima THEN rating IS ruim;
+        RULE  5 : IF script IS ruim  AND acting IS normal    AND direction IS normal  THEN rating IS mediocre;
+        RULE  6 : IF script IS ruim  AND acting IS normal    AND direction IS otima   THEN rating IS mediocre;
+        RULE  7 : IF script IS ruim  AND acting IS majestosa AND direction IS pessima THEN rating IS mediocre;
+        RULE  8 : IF script IS ruim  AND acting IS majestosa AND direction IS normal  THEN rating IS mediocre;
+        RULE  9 : IF script IS ruim  AND acting IS majestosa AND direction IS otima   THEN rating IS bom;
+        RULE 10 : IF script IS bom   AND acting IS pessima   AND direction IS pessima THEN rating IS ruim;
+        RULE 11 : IF script IS bom   AND acting IS pessima   AND direction IS normal  THEN rating IS ruim;
+        RULE 12 : IF script IS bom   AND acting IS pessima   AND direction IS otima   THEN rating IS mediocre;
+        RULE 13 : IF script IS bom   AND acting IS normal    AND direction IS pessima THEN rating IS ruim;
+        RULE 14 : IF script IS bom   AND acting IS normal    AND direction IS normal  THEN rating IS mediocre;
+        RULE 15 : IF script IS bom   AND acting IS normal    AND direction IS otima   THEN rating IS bom;
+        RULE 16 : IF script IS bom   AND acting IS majestosa AND direction IS pessima THEN rating IS bom;
+        RULE 17 : IF script IS bom   AND acting IS majestosa AND direction IS normal  THEN rating IS bom;
+        RULE 18 : IF script IS bom   AND acting IS majestosa AND direction IS otima   THEN rating IS obra_prima;
+        RULE 19 : IF script IS otimo AND acting IS pessima   AND direction IS pessima THEN rating IS mediocre;
+        RULE 20 : IF script IS otimo AND acting IS pessima   AND direction IS normal  THEN rating IS mediocre;
+        RULE 21 : IF script IS otimo AND acting IS pessima   AND direction IS otima   THEN rating IS mediocre;
+        RULE 22 : IF script IS otimo AND acting IS normal    AND direction IS pessima THEN rating IS mediocre;
+        RULE 23 : IF script IS otimo AND acting IS normal    AND direction IS normal  THEN rating IS mediocre;
+        RULE 24 : IF script IS otimo AND acting IS normal    AND direction IS otima   THEN rating IS bom;
+        RULE 25 : IF script IS otimo AND acting IS majestosa AND direction IS pessima THEN rating IS bom;
+        RULE 26 : IF script IS otimo AND acting IS majestosa AND direction IS normal  THEN rating IS bom;
+        RULE 27 : IF script IS otimo AND acting IS majestosa AND direction IS otima   THEN rating IS obra_prima;
+    END_RULEBLOCK
+
+END_FUNCTION_BLOCK
